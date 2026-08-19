@@ -761,17 +761,27 @@ img {
 }
 
 /* =========================================================
-   TRANSFER FLOW (UPLOAD PAGE)
+   TRANSFER FLOW (UPLOAD PAGE) & RECEIVE FLOW
 ========================================================= */
 .transfer-layout, .receive-layout {
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
     gap: 1.75rem;
-    align-items: start;
+    align-items: stretch;
 }
 
 .upload-panel, .result-panel, .lookup-panel, .inspector-panel, .direct-container, .history-panel {
     padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.upload-form, .lookup-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
 }
 
 /* Dropzone */
@@ -779,11 +789,17 @@ img {
     border: 2px dashed var(--outline-variant);
     border-radius: var(--radius-md);
     background: rgba(11, 14, 17, 0.6);
-    padding: 2.75rem 1.5rem;
+    padding: 2.25rem 1.5rem;
     text-align: center;
     cursor: pointer;
     transition: all 180ms ease;
     margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 220px;
 }
 
 .dropzone:hover, .dropzone.dragover {
@@ -1051,7 +1067,10 @@ img {
 .qr-showcase {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex: 1;
     margin-bottom: 1.25rem;
+    min-height: 220px;
 }
 
 .qr-frame {
@@ -1094,6 +1113,21 @@ img {
 .qr-placeholder-text {
     font-size: 0.72rem;
     font-family: var(--font-mono);
+}
+
+.lookup-panel, .inspector-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 380px;
+}
+
+.lookup-panel .lookup-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    flex: 1;
 }
 
 /* =========================================================
