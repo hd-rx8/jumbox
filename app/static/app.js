@@ -201,6 +201,8 @@ function bindAuthForm() {
     const mobileDrawer = $('mobileAuthDrawer');
     const mobileClose = $('mobileAuthClose');
     const mobileForm = $('mobileAuthForm');
+    const mobileSignOutBtn = $('mobileSignOutBtn');
+    const mobileRegisterBtn = $('mobileRegisterButton');
     tabletSignInBtn?.addEventListener('click', () => {
         if (!mobileDrawer) return;
         mobileDrawer.hidden = !mobileDrawer.hidden;
