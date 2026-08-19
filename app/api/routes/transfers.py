@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Path as APIPath, UploadFile, status
 from fastapi.responses import FileResponse
 from fastapi import Request, Response
 import segno
@@ -27,7 +27,16 @@ def get_transfer_service(settings: Settings = Depends(get_settings), uow: SQLAlc
     return TransferService(uow=uow, file_storage=file_storage, code_generator=TransferCodeGenerator())
 
 
-@router.post("", response_model=TransferUploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=TransferUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Upload single transfer",
+    description="Protected endpoint allowing authenticated users to upload and share a single file transfer.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def upload_transfer(
     file: UploadFile = File(...),
     expires_in_seconds: int | None = Form(default=None),
@@ -50,7 +59,15 @@ async def upload_transfer(
         original_name=result.original_name,
     )
 
-@router.get("/mine", response_model=list[TransferDownloadResponse])
+@router.get(
+    "/mine",
+    response_model=list[TransferDownloadResponse],
+    summary="List user's transfers",
+    description="Protected endpoint returning all file transfers uploaded by the authenticated user.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def list_my_transfers(
     current_user: AuthenticatedUser = Depends(get_current_user),
     transfer_service: TransferService = Depends(get_transfer_service),
@@ -73,9 +90,17 @@ async def list_my_transfers(
     ]
 
 
-@router.get("/{transfer_code}", response_model=TransferDownloadResponse)
+@router.get(
+    "/{transfer_code}",
+    response_model=TransferDownloadResponse,
+    summary="Get transfer metadata by code",
+    description="Public endpoint to inspect metadata for a single transfer by its 8-digit share code.",
+    responses={
+        404: {"description": "Transfer not found"},
+    },
+)
 async def get_transfer_metadata(
-    transfer_code: str,
+    transfer_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
     transfer_service: TransferService = Depends(get_transfer_service),
 ) -> TransferDownloadResponse:
     try:
@@ -94,9 +119,17 @@ async def get_transfer_metadata(
     )
 
 
-@router.get("/{transfer_code}/download")
+@router.get(
+    "/{transfer_code}/download",
+    summary="Download single transfer file",
+    description="Public streaming download for a single transfer file using its share code.",
+    responses={
+        404: {"description": "Transfer or file not found"},
+        410: {"description": "Transfer expired"},
+    },
+)
 async def download_transfer(
-    transfer_code: str,
+    transfer_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
     transfer_service: TransferService = Depends(get_transfer_service),
 ) -> FileResponse:
     try:
@@ -120,10 +153,18 @@ async def download_transfer(
 
 
 import io
-@router.get("/{transfer_code}/qr.png")
+@router.get(
+    "/{transfer_code}/qr.png",
+    summary="Generate QR code for single transfer",
+    description="Public endpoint generating a QR code for direct download of the single transfer.",
+    responses={
+        404: {"description": "Transfer not found"},
+        410: {"description": "Transfer expired"},
+    },
+)
 async def transfer_qr_png(
-    transfer_code: str,
-    request: Request,
+    transfer_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
+    request: Request = None,
     transfer_service: TransferService = Depends(get_transfer_service),
 ) -> Response:
     try:

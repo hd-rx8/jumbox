@@ -16,7 +16,16 @@ def get_folder_service(uow: SQLAlchemyUnitOfWork = Depends(get_uow)) -> FolderSe
     return FolderService(uow=uow)
 
 
-@router.post("", response_model=FolderResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=FolderResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create folder",
+    description="Protected endpoint allowing authenticated users to create a new folder.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def create_folder(
     payload: CreateFolderRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -26,7 +35,15 @@ async def create_folder(
     return FolderResponse(folder_id=result.folder_id, name=result.name, parent_id=result.parent_id)
 
 
-@router.get("", response_model=list[FolderResponse])
+@router.get(
+    "",
+    response_model=list[FolderResponse],
+    summary="List folders",
+    description="Protected endpoint returning all folders owned by the authenticated user.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def list_folders(
     current_user: AuthenticatedUser = Depends(get_current_user),
     folder_service: FolderService = Depends(get_folder_service),

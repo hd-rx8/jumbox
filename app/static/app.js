@@ -1,6 +1,25 @@
 const API_PREFIX = '/api/v1';
 const TOKEN_KEY = 'jumbox.access_token';
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getSecureRandomFloat() {
+    if (window.crypto && window.crypto.getRandomValues) {
+        const buffer = new Uint32Array(1);
+        window.crypto.getRandomValues(buffer);
+        return buffer[0] / (0xFFFFFFFF + 1);
+    }
+    return 0.5;
+}
+
 function $(id) {
     return document.getElementById(id);
 }
@@ -77,6 +96,7 @@ function formatExpiration(expiresAt) {
 function refreshAuthStatus() {
     const statusEl = $('authStatus');
     const authForm = $('authForm');
+    const tabletOpenBtn = $('tabletAuthSignInBtn');
     const mobileToggle = $('mobileAuthToggle');
     const mobileDrawer = $('mobileAuthDrawer');
     const mobileAuthForm = $('mobileAuthForm');
@@ -89,10 +109,46 @@ function refreshAuthStatus() {
 
     if (!user) {
         if (statusEl) {
-            statusEl.textContent = 'Not signed in';
+            statusEl.innerHTML = '';
             statusEl.classList.remove('signed-in');
+            statusEl.style.display = 'none';
         }
-        if (authForm) authForm.style.display = 'flex';
+        if (authForm) {
+            authForm.style.display = '';
+            authForm.innerHTML = `
+                <input type="email" name="email" placeholder="Email" autocomplete="email" required />
+                <input type="password" name="password" placeholder="Password" autocomplete="current-password" minlength="8" required />
+                <button type="submit" class="btn btn-secondary btn-sm">Sign in</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="registerButton">Register</button>
+            `;
+            // Re-bind register button on the fresh form
+            $('registerButton')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const payload = Object.fromEntries(new FormData(authForm).entries());
+                if (!payload.email || !payload.password) {
+                    toast('Please enter email and password.', 'error');
+                    return;
+                }
+                try {
+                    const resp = await fetch(`${API_PREFIX}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!resp.ok) {
+                        const err = await resp.json().catch(() => ({}));
+                        throw new Error(err.detail || 'Registration failed');
+                    }
+                    const data = await resp.json();
+                    setToken(data.access_token);
+                    toast('Account created and signed in.');
+                    refreshAuthStatus();
+                } catch (err) {
+                    toast(err.message, 'error');
+                }
+            });
+        }
+        if (tabletOpenBtn) tabletOpenBtn.style.display = '';
         if (mobileToggle) mobileToggle.classList.remove('signed-in');
         if (mobileAuthForm) mobileAuthForm.hidden = false;
         if (mobileSignedInWrap) mobileSignedInWrap.hidden = true;
@@ -100,17 +156,34 @@ function refreshAuthStatus() {
     } else {
         const userDisplay = user.email || 'User';
         if (statusEl) {
-            statusEl.textContent = `Signed in as ${userDisplay}`;
+            statusEl.innerHTML = `
+                <div class="user-profile-badge" title="${escapeHtml(userDisplay)}" id="userProfileBadge" role="button" tabindex="0" aria-label="User Account">
+                    <span class="material-symbols-outlined user-avatar-icon">account_circle</span>
+                    <span class="user-badge-email">${escapeHtml(userDisplay)}</span>
+                </div>
+            `;
             statusEl.classList.add('signed-in');
+            statusEl.style.display = 'flex';
+
+            $('userProfileBadge')?.addEventListener('click', () => {
+                if (mobileDrawer) mobileDrawer.hidden = !mobileDrawer.hidden;
+            });
         }
         if (authForm) {
-            authForm.innerHTML = `<button type="button" id="signOutBtn" class="btn btn-ghost btn-sm">Sign out</button>`;
+            authForm.style.display = 'flex';
+            authForm.innerHTML = `
+                <button type="button" id="signOutBtn" class="btn btn-ghost btn-sm btn-signout" title="Sign out">
+                    <span class="material-symbols-outlined icon-sm">logout</span>
+                    <span class="signout-text">Sign out</span>
+                </button>
+            `;
             $('signOutBtn')?.addEventListener('click', () => {
                 clearToken();
                 toast('Signed out.');
                 window.location.reload();
             });
         }
+        if (tabletOpenBtn) tabletOpenBtn.style.display = 'none';
         if (mobileToggle) mobileToggle.classList.add('signed-in');
         if (mobileAuthForm) mobileAuthForm.hidden = true;
         if (mobileSignedInWrap) mobileSignedInWrap.hidden = false;
@@ -123,12 +196,15 @@ function bindAuthForm() {
     const form = $('authForm');
     const registerBtn = $('registerButton');
 
+    const tabletSignInBtn = $('tabletAuthSignInBtn');
     const mobileToggle = $('mobileAuthToggle');
     const mobileDrawer = $('mobileAuthDrawer');
     const mobileClose = $('mobileAuthClose');
     const mobileForm = $('mobileAuthForm');
-    const mobileRegisterBtn = $('mobileRegisterButton');
-    const mobileSignOutBtn = $('mobileSignOutBtn');
+    tabletSignInBtn?.addEventListener('click', () => {
+        if (!mobileDrawer) return;
+        mobileDrawer.hidden = !mobileDrawer.hidden;
+    });
 
     mobileToggle?.addEventListener('click', () => {
         if (!mobileDrawer) return;
@@ -313,7 +389,7 @@ async function uploadFileResumable(file, sessionId, token, onProgress, onItemSta
                     if (onItemStatus) onItemStatus('✗ Failed', 'status-failed');
                     throw new Error(`Upload failed for ${file.name} after ${MAX_RETRIES} attempts: ${err.message}`);
                 }
-                const delayMs = Math.min(16000, 1000 * Math.pow(2, attempt - 1)) + (Math.random() * 500);
+                const delayMs = Math.min(16000, 1000 * Math.pow(2, attempt - 1)) + (getSecureRandomFloat() * 500);
                 if (onItemStatus) onItemStatus(`Retrying (${attempt}/${MAX_RETRIES})...`, 'status-retrying');
                 await new Promise(r => setTimeout(r, delayMs));
             }
@@ -375,10 +451,10 @@ function setupUploadPage() {
             itemEl.className = 'queue-item';
             itemEl.id = `queueItem_${index}`;
             itemEl.innerHTML = `
-                <div class="file-icon-badge">${ext}</div>
+                <div class="file-icon-badge">${escapeHtml(ext)}</div>
                 <div class="queue-item-info">
-                    <span class="queue-item-name">${file.name}</span>
-                    <span class="queue-item-sub">${formatBytes(file.size)}</span>
+                    <span class="queue-item-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+                    <span class="queue-item-sub">${escapeHtml(formatBytes(file.size))}</span>
                 </div>
                 <div class="queue-item-status status-queued" id="itemStatus_${index}">Queued</div>
             `;
@@ -619,15 +695,15 @@ function setupReceivePage() {
                 const shaShort = item.checksum_sha256 ? `${item.checksum_sha256.slice(0, 8)}...` : '';
                 card.innerHTML = `
                     <div class="receive-item-top">
-                        <div class="file-icon-badge">${ext}</div>
-                        <h4 class="receive-item-name" title="${item.original_name}">${item.original_name}</h4>
+                        <div class="file-icon-badge">${escapeHtml(ext)}</div>
+                        <h4 class="receive-item-name" title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</h4>
                     </div>
                     <div class="receive-item-bottom">
                         <div class="receive-item-meta">
-                            <span class="meta-size">${formatBytes(item.size_bytes)}</span>
-                            ${shaShort ? `<span class="sha-badge" title="SHA-256: ${item.checksum_sha256}">SHA: ${shaShort}</span>` : ''}
+                            <span class="meta-size">${escapeHtml(formatBytes(item.size_bytes))}</span>
+                            ${shaShort ? `<span class="sha-badge" title="SHA-256: ${escapeHtml(item.checksum_sha256)}">SHA: ${escapeHtml(shaShort)}</span>` : ''}
                         </div>
-                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
+                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${encodeURIComponent(currentSession.session_code)}/items/${encodeURIComponent(item.item_id)}/download" download="${escapeHtml(item.original_name)}">
                             <span class="material-symbols-outlined icon-sm">download</span>
                             Download
                         </a>
@@ -709,15 +785,15 @@ function setupDirectSessionPage() {
                 const shaShort = item.checksum_sha256 ? `${item.checksum_sha256.slice(0, 8)}...` : '';
                 card.innerHTML = `
                     <div class="receive-item-top">
-                        <div class="file-icon-badge">${ext}</div>
-                        <h4 class="receive-item-name" title="${item.original_name}">${item.original_name}</h4>
+                        <div class="file-icon-badge">${escapeHtml(ext)}</div>
+                        <h4 class="receive-item-name" title="${escapeHtml(item.original_name)}">${escapeHtml(item.original_name)}</h4>
                     </div>
                     <div class="receive-item-bottom">
                         <div class="receive-item-meta">
-                            <span class="meta-size">${formatBytes(item.size_bytes)}</span>
-                            ${shaShort ? `<span class="sha-badge" title="SHA-256: ${item.checksum_sha256}">SHA: ${shaShort}</span>` : ''}
+                            <span class="meta-size">${escapeHtml(formatBytes(item.size_bytes))}</span>
+                            ${shaShort ? `<span class="sha-badge" title="SHA-256: ${escapeHtml(item.checksum_sha256)}">SHA: ${escapeHtml(shaShort)}</span>` : ''}
                         </div>
-                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
+                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${encodeURIComponent(currentSession.session_code)}/items/${encodeURIComponent(item.item_id)}/download" download="${escapeHtml(item.original_name)}">
                             <span class="material-symbols-outlined icon-sm">download</span>
                             Download
                         </a>
@@ -782,20 +858,20 @@ function setupHistoryPage() {
             card.innerHTML = `
                 <div class="session-card-info">
                     <div class="session-card-title">
-                        <h3>${formatSessionCode(s.session_code)}</h3>
-                        <span class="${exp.className}">${s.status.toUpperCase()}</span>
+                        <h3>${escapeHtml(formatSessionCode(s.session_code))}</h3>
+                        <span class="${escapeHtml(exp.className)}">${escapeHtml(s.status.toUpperCase())}</span>
                         ${burnBadge}
                     </div>
                     <div class="session-card-meta">
-                        <span>${s.item_count || 0} file(s)</span>
-                        <span>${formatBytes(s.total_size_bytes)}</span>
-                        <span>${exp.text}</span>
+                        <span>${escapeHtml(String(s.item_count || 0))} file(s)</span>
+                        <span>${escapeHtml(formatBytes(s.total_size_bytes))}</span>
+                        <span>${escapeHtml(exp.text)}</span>
                     </div>
                 </div>
                 <div class="session-card-actions">
-                    <button type="button" class="btn btn-ghost btn-sm copy-btn" data-code="${s.session_code}">Copy Code</button>
-                    <a class="btn btn-secondary btn-sm" href="/s/${s.session_code}">View</a>
-                    <button type="button" class="btn btn-ghost btn-sm btn-delete delete-btn" data-id="${s.session_id}" title="Delete session">
+                    <button type="button" class="btn btn-ghost btn-sm copy-btn" data-code="${escapeHtml(s.session_code)}">Copy Code</button>
+                    <a class="btn btn-secondary btn-sm" href="/s/${encodeURIComponent(s.session_code)}">View</a>
+                    <button type="button" class="btn btn-ghost btn-sm btn-delete delete-btn" data-id="${escapeHtml(s.session_id)}" title="Delete session">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>

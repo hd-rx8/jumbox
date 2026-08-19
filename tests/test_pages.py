@@ -19,3 +19,14 @@ async def test_ui_pages_render(client: AsyncClient):
     dl_resp = await client.get("/download")
     assert 'id="receiveBurnWarning"' in dl_resp.text
 
+
+@pytest.mark.anyio
+async def test_direct_session_page_escapes_xss(client: AsyncClient):
+    malicious_code = "<img src=x onerror=alert('xss')>"
+    resp = await client.get(f"/s/{malicious_code}")
+    assert resp.status_code == 200
+    assert "<img src=x onerror=alert('xss')>" not in resp.text
+    assert "&lt;img src=x onerror=alert(&#x27;xss&#x27;)&gt;" in resp.text or "&lt;img src=x onerror=alert('xss')&gt;" in resp.text
+
+
+

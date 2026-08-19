@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
@@ -8,13 +10,14 @@ ui_router = APIRouter(tags=["ui"])
 
 
 def _layout(title: str, page: str, content: str) -> HTMLResponse:
-    html = f"""<!doctype html>
+    safe_title = html.escape(title)
+    rendered_html = f"""<!doctype html>
 <html lang="en" class="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0e11" />
-    <title>{title}</title>
+    <title>{safe_title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
@@ -40,20 +43,37 @@ def _layout(title: str, page: str, content: str) -> HTMLResponse:
                 </a>
 
                 <nav class="nav-links">
-                    <a href="/" class="nav-item" data-nav="home">Home</a>
-                    <a href="/upload" class="nav-item" data-nav="upload">Send Files</a>
-                    <a href="/files" class="nav-item" data-nav="files">Transfers</a>
-                    <a href="/download" class="nav-item" data-nav="download">Receive</a>
+                    <a href="/" class="nav-item" data-nav="home">
+                        <span class="material-symbols-outlined nav-item-icon">home</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="/upload" class="nav-item" data-nav="upload">
+                        <span class="material-symbols-outlined nav-item-icon">cloud_upload</span>
+                        <span>Send Files</span>
+                    </a>
+                    <a href="/files" class="nav-item" data-nav="files">
+                        <span class="material-symbols-outlined nav-item-icon">swap_vert</span>
+                        <span>Transfers</span>
+                    </a>
+                    <a href="/download" class="nav-item" data-nav="download">
+                        <span class="material-symbols-outlined nav-item-icon">download</span>
+                        <span>Receive</span>
+                    </a>
                 </nav>
 
                 <div class="auth-panel" id="authPanel">
-                    <div class="auth-status" id="authStatus">Not signed in</div>
+                    <div class="auth-status" id="authStatus"></div>
                     <form class="auth-form" id="authForm">
                         <input type="email" name="email" placeholder="Email" autocomplete="email" required />
                         <input type="password" name="password" placeholder="Password" autocomplete="current-password" minlength="8" required />
                         <button type="submit" class="btn btn-secondary btn-sm">Sign in</button>
                         <button type="button" class="btn btn-ghost btn-sm" id="registerButton">Register</button>
                     </form>
+                    <!-- Tablet Sign In Trigger Button -->
+                    <button type="button" class="btn btn-secondary btn-sm auth-tablet-btn" id="tabletAuthSignInBtn" aria-label="Sign in to account">
+                        <span class="material-symbols-outlined icon-sm">account_circle</span>
+                        <span>Sign in</span>
+                    </button>
                     <!-- Mobile Auth Toggle Button -->
                     <button type="button" class="mobile-auth-toggle-btn" id="mobileAuthToggle" aria-label="Account Settings">
                         <span class="material-symbols-outlined">account_circle</span>
@@ -130,7 +150,7 @@ def _layout(title: str, page: str, content: str) -> HTMLResponse:
     <script src="/static/app.js" defer></script>
 </body>
 </html>"""
-    return HTMLResponse(html)
+    return HTMLResponse(rendered_html)
 
 
 @ui_router.get("/", response_class=HTMLResponse)
@@ -443,20 +463,21 @@ async def receive_page() -> HTMLResponse:
 
 @ui_router.get("/s/{session_code}", response_class=HTMLResponse)
 async def direct_session_page(session_code: str) -> HTMLResponse:
+    safe_code = html.escape(session_code)
     content = f"""
     <section class="page-header reveal">
         <div>
             <div class="page-tag">DIRECT TRANSFER</div>
-            <h1 class="page-title">Session {session_code}</h1>
+            <h1 class="page-title">Session {safe_code}</h1>
             <p class="page-desc">Files shared in this transfer session are ready for instant streaming download.</p>
         </div>
     </section>
 
-    <section class="glass-panel direct-container reveal" id="directSessionContainer" data-code="{session_code}">
+    <section class="glass-panel direct-container reveal" id="directSessionContainer" data-code="{safe_code}">
         <div class="result-header">
             <span class="page-tag">SESSION BUNDLE</span>
             <h2 class="result-title">Available Files</h2>
-            <p id="directSessionHint" class="result-hint">Loading files for session {session_code}...</p>
+            <p id="directSessionHint" class="result-hint">Loading files for session {safe_code}...</p>
         </div>
 
         <div id="directSessionContent" hidden>
@@ -481,7 +502,7 @@ async def direct_session_page(session_code: str) -> HTMLResponse:
         </div>
     </section>
     """
-    return _layout(f"Jumbox - Transfer {session_code}", "direct_session", content)
+    return _layout(f"Jumbox - Transfer {safe_code}", "direct_session", content)
 
 
 @ui_router.get("/files", response_class=HTMLResponse)

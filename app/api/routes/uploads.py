@@ -30,7 +30,16 @@ def get_chunked_upload_service(
     return ChunkedUploadService(uow=uow, transfer_service=transfer_service, uploads_root=settings.uploads_dir, temp_root=settings.temp_dir)
 
 
-@router.post("/sessions", response_model=UploadSessionResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/sessions",
+    response_model=UploadSessionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create chunked upload session",
+    description="Protected endpoint allowing authenticated users to initialize a multi-chunk file upload session.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def create_upload_session(
     payload: CreateUploadSessionRequest,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -52,7 +61,16 @@ async def create_upload_session(
     )
 
 
-@router.get("/sessions/{session_id}", response_model=UploadSessionResponse)
+@router.get(
+    "/sessions/{session_id}",
+    response_model=UploadSessionResponse,
+    summary="Get upload session status",
+    description="Protected endpoint allowing the upload owner to check current chunk progress.",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+    },
+)
 async def get_upload_session(
     session_id: UUID,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -70,7 +88,16 @@ async def get_upload_session(
     )
 
 
-@router.patch("/sessions/{session_id}", response_model=AppendChunkResponse)
+@router.patch(
+    "/sessions/{session_id}",
+    response_model=AppendChunkResponse,
+    summary="Append upload chunk",
+    description="Protected endpoint allowing the upload owner to append binary chunk data.",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Upload session not found"},
+    },
+)
 async def append_upload_chunk(
     session_id: UUID,
     chunk: UploadFile = File(...),

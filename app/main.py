@@ -15,10 +15,12 @@ from app.api.routes.pages import ui_router
 from app.application.cleanup_service import CleanupService
 from app.application.uow import SQLAlchemyUnitOfWork
 from app.core.logging import configure_logging
+from app.core.security_headers import SecurityHeadersMiddleware
 from app.core.settings import Settings, get_settings
 from app.infrastructure.db.base import Base
 import app.infrastructure.db.models  # noqa: F401
 from app.infrastructure.db.session import get_session_factory
+from app.infrastructure.security.rate_limiter import RateLimiterMiddleware
 from app.infrastructure.storage.local import LocalFileStorage
 
 
@@ -74,6 +76,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = resolved_settings
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RateLimiterMiddleware)
     static_root = Path(__file__).resolve().parent / "static"
     app.mount("/static", StaticFiles(directory=static_root), name="static")
     app.include_router(ui_router)

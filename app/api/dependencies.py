@@ -14,7 +14,11 @@ from app.domain.auth import AuthenticatedUser
 from app.infrastructure.db.session import get_session_factory
 from app.infrastructure.storage.local import LocalFileStorage
 
-bearer_scheme = HTTPBearer(auto_error=False)
+bearer_scheme = HTTPBearer(
+    auto_error=False,
+    scheme_name="HTTPBearer",
+    description="Standard JWT Bearer authorization token header (Bearer <token>)",
+)
 
 
 def get_settings(request: Request) -> Settings:

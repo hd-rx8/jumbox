@@ -6,7 +6,7 @@ from uuid import UUID
 from datetime import UTC, datetime
 
 import segno
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Path as APIPath, Request, Response, UploadFile, status
 from fastapi.responses import FileResponse
 
 from app.api.dependencies import get_current_user, get_session_service
@@ -231,9 +231,18 @@ async def list_my_sessions(
     ]
 
 
-@router.get("/{session_code}", response_model=SessionDetailResponse)
+@router.get(
+    "/{session_code}",
+    response_model=SessionDetailResponse,
+    summary="Get transfer session details by code",
+    description="Public endpoint to inspect available files in an active transfer session using the share code.",
+    responses={
+        404: {"description": "Session not found"},
+        410: {"description": "Session expired"},
+    },
+)
 async def get_session(
-    session_code: str,
+    session_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
     session_service: SessionService = Depends(get_session_service),
 ) -> SessionDetailResponse:
     session = await session_service.get_session_by_code(session_code)
@@ -242,7 +251,17 @@ async def get_session(
     return _to_detail_response(session)
 
 
-@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{session_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete transfer session",
+    description="Protected endpoint allowing the session owner to permanently remove a transfer session.",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Permission denied (not session owner)"},
+        404: {"description": "Session not found"},
+    },
+)
 async def delete_session(
     session_id: UUID,
     current_user: AuthenticatedUser = Depends(get_current_user),
@@ -257,11 +276,18 @@ async def delete_session(
 
 
 
-@router.get("/{session_code}/items/{item_id}/download")
+@router.get(
+    "/{session_code}/items/{item_id}/download",
+    summary="Download file item from session",
+    description="Public streaming download for a shared file within an active transfer session.",
+    responses={
+        404: {"description": "Item or file not found"},
+    },
+)
 async def download_session_item(
-    session_code: str,
-    item_id: UUID,
-    background_tasks: BackgroundTasks,
+    session_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
+    item_id: UUID = APIPath(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     session_service: SessionService = Depends(get_session_service),
 ) -> FileResponse:
     result = await session_service.get_session_item(session_code, item_id)
@@ -306,10 +332,17 @@ def _get_lan_ip() -> str:
         return "127.0.0.1"
 
 
-@router.get("/{session_code}/qr.png")
+@router.get(
+    "/{session_code}/qr.png",
+    summary="Generate QR code image for session",
+    description="Public endpoint generating a high-precision QR code for LAN devices to join the transfer.",
+    responses={
+        404: {"description": "Session not found"},
+    },
+)
 async def session_qr_png(
-    session_code: str,
-    request: Request,
+    session_code: str = APIPath(..., min_length=4, max_length=20, pattern=r"^[A-Za-z0-9-]+$"),
+    request: Request = None,
     base_url: str | None = None,
     session_service: SessionService = Depends(get_session_service),
 ) -> Response:

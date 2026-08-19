@@ -11,6 +11,11 @@ class HealthResponse(BaseModel):
 router = APIRouter(tags=["health"])
 
 
-@router.get("/health", response_model=HealthResponse)
+@router.get(
+    "/health",
+    response_model=HealthResponse,
+    summary="Health check probe",
+    description="Public endpoint for load balancer, container, and orchestrator health probes. Exposes no sensitive data.",
+)
 async def health_check() -> HealthResponse:
     return HealthResponse(status="ok", service="Jumbox", environment="development")

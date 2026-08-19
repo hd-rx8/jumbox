@@ -18,7 +18,15 @@ def get_transfer_service(settings: Settings = Depends(get_settings), uow: SQLAlc
     return TransferService(uow=uow, file_storage=LocalFileStorage(settings.uploads_dir), code_generator=TransferCodeGenerator())
 
 
-@router.get("/transfers", response_model=list[SearchTransferResponse])
+@router.get(
+    "/transfers",
+    response_model=list[SearchTransferResponse],
+    summary="Search transfers",
+    description="Protected endpoint allowing authenticated users to search their transfers by query.",
+    responses={
+        401: {"description": "Not authenticated"},
+    },
+)
 async def search_transfers(
     q: str = Query(min_length=1, max_length=255),
     current_user: AuthenticatedUser = Depends(get_current_user),
