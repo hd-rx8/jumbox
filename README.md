@@ -15,17 +15,22 @@ Jumbox is an open-source tool designed for fast, direct, and private file transf
 
 <div align="center">
   <h3>🏠 Home Dashboard</h3>
-  <img src="https://lh3.googleusercontent.com/aida/AP1WRLsg69l5SvZoRp84GjJGHyRYEK-s-w8cokjhx3jyG-ZI4qF8iaNfi-8qQO7Ao91NPXNC3PmtKS4LNWJ8Op7q5Lm9qDOmEuOE_S4h9xDz-zKEGdwUWSr6scEE-F4jUKeDq8RneINh_0yQsrEZc_WA6xRM6X4cmkGKmzl2nnXVSNcRs5DJn43R9FCknXOuJPvbsOrPv4C1YVIidzSAYpmdWnXnzBkr8hNSxDfaPzmAfRGA0gc0uCU6PotM3Es" alt="Jumbox Home Dashboard" width="800" />
+  <img src="img-demo/print01.png" alt="Jumbox Home Dashboard" width="850" />
 
   <br/><br/>
 
-  <h3>📤 Send Files & Live Telemetry</h3>
-  <img src="https://lh3.googleusercontent.com/aida/AP1WRLu5jzP8AxRM9n60WwpTrwaOmJ-Y6xiqEeTIpWtZL67zQgrStsdXYfk6tvvd0S1RBepcoFhr7ouKCxVLscKQTTz_Bp7D2QyLW9UhGzwbWpassfveudrn5CbLqGpVILs1f-Fxbc-lUQwSg19YlWgAX-jNU55XfUGlrgfRnton8q8S2JSasZyE3PS2x5Z-ptpsh2iblwuL0hwK2mpkFsZZpc99aJhukWuP6uiJg8r3I1HSSGyvSS3Mr8fg14o" alt="Jumbox Send Files" width="800" />
+  <h3>📤 Send Files & Share Credentials</h3>
+  <img src="img-demo/print02.png" alt="Jumbox Send Files & QR Code" width="850" />
+
+  <br/><br/>
+
+  <h3>📋 Transfer Sessions Management</h3>
+  <img src="img-demo/print03.png" alt="Jumbox Transfer Sessions" width="850" />
 
   <br/><br/>
 
   <h3>📥 Receive Files & Package Inspector</h3>
-  <img src="https://lh3.googleusercontent.com/aida/AP1WRLvW40xgjGoICKWLCW6we8Pm-YeoQPlxLlybS5p2RxgrZz70EY6W2ajDfAJn_JKO_5KRK-q2fK4ClnTM2-Vxum1xtZyb4d-Tw38pYOHLN4cSTwRMYFuDd192qu29qU8Vo1SRx92BunXk8v2nhL3Mz9oaO3_w7pV-095M_gjWTuOCyEHo6zT-dzhqbNUAsP0YURV2GdNs5yUEOpDK0dRZ0KUFtNTN6mBU2yY9AmIrKyVlTHbM1NUqlDF15H0" alt="Jumbox Receive Files" width="800" />
+  <img src="img-demo/print04.png" alt="Jumbox Receive Files" width="850" />
 </div>
 
 ---
