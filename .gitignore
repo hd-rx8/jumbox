@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Data, Storage & Databases
+data/
+uploads/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Logs & Temporary Files
+*.log
+*.tmp
+*.bak
+*.old
+*.orig
+*.swp
+*.swo
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# IDEs & Operating Systems
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# AI & Development Agent Tooling Artifacts
+.claude/
+.codex/
+.agy/
+.antigravity/
+.system_generated/
+brain/
+scratch/
+graphify-out/
+
