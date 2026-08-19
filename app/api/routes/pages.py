@@ -17,7 +17,7 @@ def _layout(title: str, page: str, content: str) -> HTMLResponse:
     <title>{title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/static/app.css" />
     <link rel="icon" type="image/png" href="/static/logo.png">
@@ -358,25 +358,48 @@ async def receive_page() -> HTMLResponse:
     </section>
 
     <section class="receive-layout">
-        <!-- Left: Code Input Card -->
-        <article class="glass-panel lookup-panel reveal">
+        <!-- Left: 8-Bit Cyber Code Input Card -->
+        <article class="glass-panel lookup-panel cyber-receiver-card reveal">
+            <div class="result-header">
+                <span class="page-tag">ENCRYPTED CHANNEL</span>
+                <h2 class="result-title">Access Bundle</h2>
+                <p class="result-hint">Enter the 8-digit key to unlock files directly from the sender.</p>
+            </div>
+
             <form id="receiveCodeForm" class="lookup-form">
-                <label class="control-field">
-                    <span class="control-label">8-Digit Transfer Code</span>
-                    <input
-                        id="receiveCodeInput"
-                        type="text"
-                        class="code-text-input"
-                        maxlength="9"
-                        placeholder="7431-9285"
-                        autocomplete="off"
-                        required
-                    />
-                </label>
-                <button type="submit" id="lookupSessionBtn" class="btn btn-primary btn-lg btn-wide">
-                    <span class="material-symbols-outlined icon-sm">search</span>
-                    Find Transfer
-                </button>
+                <div class="code-matrix-display">
+                    <div class="matrix-scanline"></div>
+                    <div class="matrix-header">
+                        <span class="matrix-status-dot"></span>
+                        <span class="matrix-status-text">SYSTEM READY // ENTER KEY</span>
+                    </div>
+
+                    <div class="code-input-wrapper">
+                        <input
+                            id="receiveCodeInput"
+                            type="text"
+                            class="code-text-input-8bit"
+                            maxlength="9"
+                            placeholder="____-____"
+                            autocomplete="off"
+                            required
+                            spellcheck="false"
+                            autofocus
+                        />
+                    </div>
+
+                    <div class="matrix-corner top-left"></div>
+                    <div class="matrix-corner top-right"></div>
+                    <div class="matrix-corner bottom-left"></div>
+                    <div class="matrix-corner bottom-right"></div>
+                </div>
+
+                <div class="lookup-actions">
+                    <button type="submit" id="lookupSessionBtn" class="btn btn-primary btn-lg btn-wide btn-neon-cyan">
+                        <span class="material-symbols-outlined icon-sm">lock_open</span>
+                        DECRYPT & FETCH
+                    </button>
+                </div>
             </form>
         </article>
 

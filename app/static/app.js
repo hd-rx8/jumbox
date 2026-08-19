@@ -572,6 +572,17 @@ function setupReceivePage() {
 
     let currentSession = null;
 
+    codeInput.addEventListener('input', () => {
+        let val = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (val.length > 4) {
+            val = `${val.slice(0, 4)}-${val.slice(4, 8)}`;
+        }
+        codeInput.value = val;
+        if (val.replace('-', '').length === 8) {
+            loadSession(val);
+        }
+    });
+
     async function loadSession(code) {
         const cleanCode = code.replace(/[^a-zA-Z0-9-]/g, '').trim();
         if (!cleanCode) return;
