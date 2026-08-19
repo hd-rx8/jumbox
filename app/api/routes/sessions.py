@@ -132,10 +132,11 @@ async def get_item_offset(
     session_id: UUID,
     item_id: UUID,
     response: Response,
+    current_user: AuthenticatedUser = Depends(get_current_user),
     session_service: SessionService = Depends(get_session_service),
 ) -> OffsetResponse:
     try:
-        item, offset = await session_service.get_item_offset(session_id, item_id)
+        item, offset = await session_service.get_item_offset(session_id, item_id, owner=current_user)
         response.headers["Upload-Offset"] = str(offset)
         return OffsetResponse(
             item_id=item.id,
@@ -147,6 +148,8 @@ async def get_item_offset(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except ItemNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except PermissionDeniedError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
 
 @router.patch("/{session_id}/items/{item_id}/chunks", response_model=ChunkUploadResponse)
@@ -198,7 +201,7 @@ async def upload_item_chunk(
         err_msg = str(exc)
         if "Offset mismatch" in err_msg:
             # Query actual current offset
-            _, current_offset = await session_service.get_item_offset(session_id, item_id)
+            _, current_offset = await session_service.get_item_offset(session_id, item_id, owner=current_user)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=err_msg,

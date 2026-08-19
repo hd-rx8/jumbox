@@ -259,7 +259,7 @@ class SessionService:
             await uow.commit()
             return item
 
-    async def get_item_offset(self, session_id: UUID, item_id: UUID) -> tuple[TransferItem, int]:
+    async def get_item_offset(self, session_id: UUID, item_id: UUID, owner: AuthenticatedUser) -> tuple[TransferItem, int]:
         if self._chunk_storage is None:
             raise RuntimeError("ChunkStorage is not configured")
 
@@ -267,6 +267,8 @@ class SessionService:
             session = await uow.sessions.get_by_id(session_id)
             if session is None:
                 raise SessionNotFoundError(f"Session {session_id} not found")
+            if session.owner_id != owner.user_id and not owner.is_admin:
+                raise PermissionDeniedError("Cannot inspect a session you do not own")
             item = await uow.sessions.get_item_by_id(item_id)
             if item is None or item.session_id != session_id:
                 raise ItemNotFoundError(f"Item {item_id} not found")
