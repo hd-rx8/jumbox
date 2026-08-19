@@ -618,17 +618,20 @@ function setupReceivePage() {
                 card.className = 'receive-item-card';
                 const shaShort = item.checksum_sha256 ? `${item.checksum_sha256.slice(0, 8)}...` : '';
                 card.innerHTML = `
-                    <div class="file-icon-badge">${ext}</div>
-                    <div class="receive-item-info">
-                        <h4>${item.original_name}</h4>
+                    <div class="receive-item-top">
+                        <div class="file-icon-badge">${ext}</div>
+                        <h4 class="receive-item-name" title="${item.original_name}">${item.original_name}</h4>
+                    </div>
+                    <div class="receive-item-bottom">
                         <div class="receive-item-meta">
-                            <span>${formatBytes(item.size_bytes)}</span>
+                            <span class="meta-size">${formatBytes(item.size_bytes)}</span>
                             ${shaShort ? `<span class="sha-badge" title="SHA-256: ${item.checksum_sha256}">SHA: ${shaShort}</span>` : ''}
                         </div>
+                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
+                            <span class="material-symbols-outlined icon-sm">download</span>
+                            Download
+                        </a>
                     </div>
-                    <a class="btn btn-secondary btn-sm" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
-                        Download
-                    </a>
                 `;
                 itemsList.appendChild(card);
             });
@@ -705,17 +708,20 @@ function setupDirectSessionPage() {
                 card.className = 'receive-item-card';
                 const shaShort = item.checksum_sha256 ? `${item.checksum_sha256.slice(0, 8)}...` : '';
                 card.innerHTML = `
-                    <div class="file-icon-badge">${ext}</div>
-                    <div class="receive-item-info">
-                        <h4>${item.original_name}</h4>
+                    <div class="receive-item-top">
+                        <div class="file-icon-badge">${ext}</div>
+                        <h4 class="receive-item-name" title="${item.original_name}">${item.original_name}</h4>
+                    </div>
+                    <div class="receive-item-bottom">
                         <div class="receive-item-meta">
-                            <span>${formatBytes(item.size_bytes)}</span>
+                            <span class="meta-size">${formatBytes(item.size_bytes)}</span>
                             ${shaShort ? `<span class="sha-badge" title="SHA-256: ${item.checksum_sha256}">SHA: ${shaShort}</span>` : ''}
                         </div>
+                        <a class="btn btn-secondary btn-sm receive-download-btn" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
+                            <span class="material-symbols-outlined icon-sm">download</span>
+                            Download
+                        </a>
                     </div>
-                    <a class="btn btn-secondary btn-sm" href="${API_PREFIX}/sessions/${currentSession.session_code}/items/${item.item_id}/download" download="${item.original_name}">
-                        Download
-                    </a>
                 `;
                 itemsList.appendChild(card);
             });

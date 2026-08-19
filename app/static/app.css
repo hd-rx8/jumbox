@@ -1341,25 +1341,62 @@ img {
 
 .receive-item-card {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.9rem 1.1rem;
     background: var(--surface-container-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: var(--radius-sm);
+    transition: border-color 140ms ease;
+}
+
+.receive-item-card:hover {
+    border-color: rgba(0, 219, 231, 0.3);
+}
+
+.receive-item-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    width: 100%;
 }
 
 .receive-item-name {
+    margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.84rem;
+    font-size: 0.88rem;
     font-weight: 600;
     color: var(--on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
 }
 
-.receive-item-size {
+.receive-item-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.receive-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     font-family: var(--font-mono);
     font-size: 0.76rem;
     color: var(--on-surface-variant);
+    flex-wrap: wrap;
+}
+
+.receive-download-btn {
+    margin-left: auto;
+    min-height: 34px;
+    padding: 0.3rem 0.85rem;
 }
 
 /* =========================================================
@@ -1550,8 +1587,6 @@ img {
     .bento-grid { grid-template-columns: 1fr; }
     .flow-steps { grid-template-columns: 1fr; gap: 2rem; }
     .transfer-layout, .receive-layout { grid-template-columns: 1fr; }
-    .topbar-inner { flex-wrap: wrap; height: auto; padding: 0.75rem 0; }
-    .auth-panel { width: 100%; justify-content: flex-start; }
     .session-options-grid { grid-template-columns: 1fr; }
     .session-card { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .session-card-actions { width: 100%; justify-content: flex-end; }
@@ -1792,35 +1827,64 @@ img {
 
     .topbar-inner {
         width: 100%;
-        height: 58px;
+        height: 56px;
         padding: 0 1rem;
         display: flex;
+        flex-direction: row;
         justify-content: space-between;
         align-items: center;
+        flex-wrap: nowrap !important;
         margin: 0 auto;
+        gap: 0.5rem;
     }
 
     .brand {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         flex-shrink: 0;
     }
 
     .brand-logo {
         width: 28px;
         height: 28px;
+        flex-shrink: 0;
     }
 
     .brand-text {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 800;
+        white-space: nowrap;
     }
 
     .brand-tag {
         font-size: 0.62rem;
         padding: 1px 5px;
+        flex-shrink: 0;
+    }
+
+    .direct-container {
+        padding: 1.25rem 1rem;
+    }
+
+    .receive-item-card {
+        padding: 0.75rem 0.85rem;
+        gap: 0.55rem;
+    }
+
+    .receive-item-name {
+        font-size: 0.82rem;
+    }
+
+    .receive-item-meta {
+        font-size: 0.72rem;
+        gap: 0.4rem;
+    }
+
+    .receive-download-btn {
+        font-size: 0.76rem;
+        padding: 0.25rem 0.65rem;
     }
 
     .app-shell {
