@@ -898,6 +898,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(`[data-nav="${activeNavKey}"]`).forEach(el => el.classList.add('active'));
     }
 
+    const quickInput = document.querySelector('.quick-code-input');
+    if (quickInput) {
+        quickInput.addEventListener('input', () => {
+            let val = quickInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (val.length > 4) {
+                val = `${val.slice(0, 4)}-${val.slice(4, 8)}`;
+            }
+            quickInput.value = val;
+        });
+    }
+
     if (page === 'upload') setupUploadPage();
     else if (page === 'download') setupReceivePage();
     else if (page === 'direct_session') setupDirectSessionPage();

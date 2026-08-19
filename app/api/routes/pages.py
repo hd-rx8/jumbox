@@ -312,12 +312,16 @@ async def upload_page() -> HTMLResponse:
             </div>
 
             <!-- 8-Digit Code Display -->
-            <div class="code-showcase">
+            <div class="code-showcase cyber-code-box">
+                <div class="matrix-corner top-left"></div>
+                <div class="matrix-corner top-right"></div>
                 <div class="code-digits" id="sessionCodeDisplay">---- - ----</div>
                 <button type="button" class="btn btn-secondary btn-sm" id="copySessionCodeBtn" disabled>
                     <span class="material-symbols-outlined icon-sm">content_copy</span>
                     Copy Code
                 </button>
+                <div class="matrix-corner bottom-left"></div>
+                <div class="matrix-corner bottom-right"></div>
             </div>
 
             <!-- QR Code Box -->
